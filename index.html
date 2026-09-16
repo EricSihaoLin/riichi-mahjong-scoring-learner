@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riichi Mahjong Score Learner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="viewport">
+    <div id="stage">
+      <!-- table -->
+      <div class="table-bg"></div>
+      <svg class="table-lines" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
+
+      <div class="wall" data-seat="top"></div>
+      <div class="wall" data-seat="left"></div>
+      <div class="wall" data-seat="right"></div>
+      <div class="wall" data-seat="bottom"></div>
+
+      <div class="opp-hand" data-seat="top"></div>
+      <div class="opp-hand" data-seat="left"></div>
+      <div class="opp-hand" data-seat="right"></div>
+
+      <div class="discards" data-seat="bottom"></div>
+      <div class="discards" data-seat="top"></div>
+      <div class="discards" data-seat="left"></div>
+      <div class="discards" data-seat="right"></div>
+
+      <div class="compass" id="compass"></div>
+
+      <!-- players -->
+      <div class="player" data-seat="bottom" id="player-bottom"></div>
+      <div class="player" data-seat="left" id="player-left"></div>
+      <div class="player" data-seat="top" id="player-top"></div>
+      <div class="player" data-seat="right" id="player-right"></div>
+
+      <!-- top-left round box -->
+      <div class="round-box" id="round-box"></div>
+      <div class="room-label">Score Learner · 4-Player South</div>
+
+      <!-- emote strip (decorative) -->
+      <div class="emote-strip"><span>A</span><span>R</span><span>C</span><span>D</span><span class="tri">▶</span></div>
+
+      <!-- toolbar -->
+      <nav class="toolbar">
+        <button class="tb-btn" id="btn-chart" title="Scoring chart">Score Chart</button>
+        <div class="menu" id="menu-common">
+          <button class="tb-btn">Common Yaku ▾</button>
+          <div class="dropdown" id="dd-common"></div>
+        </div>
+        <div class="menu" id="menu-rare">
+          <button class="tb-btn">Rare Yaku ▾</button>
+          <div class="dropdown" id="dd-rare"></div>
+        </div>
+        <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
+        <button class="icon-btn" id="btn-help" title="Help">?</button>
+      </nav>
+
+      <!-- quiz panel -->
+      <div class="quiz-panel" id="quiz"></div>
+
+      <!-- my hand -->
+      <div class="my-hand" id="my-hand"></div>
+
+      <div class="counter" id="counter">0</div>
+      <div class="signal"><i></i><i></i><i></i></div>
+
+      <!-- modals -->
+      <div class="modal" id="modal-chart">
+        <div class="modal-box wide">
+          <button class="modal-close" data-close>✕</button>
+          <h2>Riichi Mahjong Scoring Chart</h2>
+          <div id="chart-body"></div>
+          <div class="chart-notes">
+            <h3>Counting fu</h3>
+            <table class="fu-table">
+              <tr><th></th><th></th><th>2–8</th><th>1, 9 &amp; honors</th></tr>
+              <tr><th rowspan="2">Triplet</th><td>Open</td><td>+2 fu</td><td>+4 fu</td></tr>
+              <tr><td>Closed</td><td>+4 fu</td><td>+8 fu</td></tr>
+              <tr><th rowspan="2">Quad (kan)</th><td>Open</td><td>+8 fu</td><td>+16 fu</td></tr>
+              <tr><td>Closed</td><td>+16 fu</td><td>+32 fu</td></tr>
+            </table>
+            <p>Start with <b>20 fu</b>. Add <b>10</b> for a <b>closed ron</b>. Add <b>2</b> for <b>tsumo</b>, <b>2</b> for a <b>yakuhai pair</b> (4 for a double wind pair), and <b>2</b> for a <b>penchan, kanchan or tanki wait</b>. Then <b>round up</b> to the nearest 10.</p>
+            <p>Exceptions: <b>chiitoitsu</b> is always 25 fu; <b>pinfu tsumo</b> is 20 fu (pinfu ron is 30); an <b>open hand with no fu</b> is 30 fu.</p>
+            <p>Basic points = fu × 2<sup>(han + 2)</sup>. Ron: non-dealer ×4, dealer ×6. Tsumo: non-dealer collects ×1 from each non-dealer and ×2 from the dealer; dealer collects ×2 from everyone. Round each payment up to the nearest 100. <span class="star">* 4 han 30 fu and 3 han 60 fu become mangan when kiriage (rounded-up) mangan is enabled.</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-settings">
+        <div class="modal-box">
+          <button class="modal-close" data-close>✕</button>
+          <h2>Settings</h2>
+          <label class="opt"><input type="checkbox" id="opt-kiriage"> Kiriage mangan (round 4 han 30 fu / 3 han 60 fu up to mangan)</label>
+          <label class="opt"><input type="checkbox" id="opt-honba"> Include honba (+300 per honba on ron, +100 per player on tsumo)</label>
+          <label class="opt"><input type="checkbox" id="opt-hidefu"> Hide fu – count it yourself from the hand</label>
+          <label class="opt"><input type="checkbox" id="opt-hidehan"> Hide han – count the yaku and dora yourself</label>
+          <label class="opt"><input type="checkbox" id="opt-showyaku" checked> Show the yaku list before answering</label>
+          <div class="opt-actions"><button class="btn secondary" id="btn-reset-stats">Reset statistics</button></div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-help">
+        <div class="modal-box">
+          <button class="modal-close" data-close>✕</button>
+          <h2>How to use</h2>
+          <ol class="help-list">
+            <li>A random winning hand is dealt to you at the bottom of the table. The tile set apart on the right is the winning tile; open melds and kans are shown beside it.</li>
+            <li>The panel on the right tells you whether you won by <b>Tsumo</b> or <b>Ron</b>, whether you are the <b>dealer</b>, and the hand's <b>han</b> and <b>fu</b>.</li>
+            <li>Type the points the hand is worth. For a non-dealer tsumo you enter both the non-dealer and the dealer payments; for a dealer tsumo, the amount everyone pays.</li>
+            <li>Press <b>Check</b> (or Enter). The breakdown explains the fu count, the yaku, and the arithmetic. Press <b>Next</b> (or Enter again) for a new hand.</li>
+            <li>The <b>Score Chart</b> button opens the full lookup table. Hover <b>Common Yaku</b> / <b>Rare Yaku</b> for reference. Settings let you hide the fu or han so you count them yourself.</li>
+          </ol>
+          <p class="help-note">The round wind is shown in the top-left box and in the centre of the table; your seat wind is the one facing you on the compass. The dealer is marked with the red 親 chip. Dora indicators are shown in the top-left box.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/tiles.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/yaku.js"></script>
+  <script src="js/hand.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

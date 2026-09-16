@@ -1,0 +1,20 @@
+# Alternative to the nginx + systemd setup: run everything in Docker.
+# 1. Copy the project to the server and cd into deploy/
+# 2. echo "TUNNEL_TOKEN=<token from Cloudflare Zero Trust>" > .env
+# 3. docker compose up -d
+# In the Cloudflare tunnel's Public Hostname, point the service at http://web:80
+services:
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ..:/usr/share/nginx/html:ro
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - web
