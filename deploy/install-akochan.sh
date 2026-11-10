@@ -21,7 +21,11 @@ else git clone --depth 1 https://github.com/critter-mj/akochan.git "$AKO"; fi
 
 echo "==> Building akochan (this can take 10+ minutes)"
 # akochan predates GCC 13, which no longer pulls in these headers implicitly (e.g. uint8_t in json11.cpp).
-COMPILER="g++ -include cstdint -include cstddef -include limits -include algorithm -include stdexcept"
+# It also links -lboost_system, which has been header-only since Boost 1.69 and whose empty stub library
+# newer Boost releases no longer ship – an empty archive satisfies the linker.
+mkdir -p "$AKO/.stub"
+printf '!<arch>\n' > "$AKO/.stub/libboost_system.a"
+COMPILER="g++ -L$AKO/.stub -include cstdint -include cstddef -include limits -include algorithm -include stdexcept"
 build() { make -f Makefile_Linux -j"$(nproc)" "COMPILER=$COMPILER" || make -f Makefile_Linux "COMPILER=$COMPILER"; }
 cd "$AKO/ai_src"
 build
