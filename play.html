@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riichi Mahjong Play Trainer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/play.css">
+</head>
+<body class="play">
+  <div id="viewport">
+    <div id="stage">
+      <div class="table-bg"></div>
+      <svg class="table-lines" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
+
+      <div class="opp-hand" data-seat="top"></div>
+      <div class="opp-hand" data-seat="left"></div>
+      <div class="opp-hand" data-seat="right"></div>
+
+      <div class="discards" data-seat="bottom"></div>
+      <div class="discards" data-seat="top"></div>
+      <div class="discards" data-seat="left"></div>
+      <div class="discards" data-seat="right"></div>
+
+      <div class="compass" id="compass"></div>
+
+      <div class="player" data-seat="bottom" id="player-bottom"></div>
+      <div class="player" data-seat="left" id="player-left"></div>
+      <div class="player" data-seat="top" id="player-top"></div>
+      <div class="player" data-seat="right" id="player-right"></div>
+
+      <div class="round-box" id="round-box"></div>
+      <div class="room-label">Play Trainer · <span id="mode-label">4-Player South</span></div>
+
+      <nav class="toolbar">
+        <a class="tb-btn" href="index.html" title="Back to the scoring quiz">◀ Score Learner</a>
+        <button class="tb-btn" id="btn-chart" title="Scoring chart">Score Chart</button>
+        <div class="menu" id="menu-common">
+          <button class="tb-btn">Common Yaku ▾</button>
+          <div class="dropdown" id="dd-common"></div>
+        </div>
+        <div class="menu" id="menu-rare">
+          <button class="tb-btn">Rare Yaku ▾</button>
+          <div class="dropdown" id="dd-rare"></div>
+        </div>
+        <button class="icon-btn" id="btn-settings" title="Settings">⚙</button>
+        <button class="icon-btn" id="btn-help" title="How grading works">?</button>
+      </nav>
+
+      <!-- engine review -->
+      <div class="quiz-panel review-panel" id="review"></div>
+
+      <div class="actions" id="actions"></div>
+      <div class="my-hand" id="my-hand"></div>
+      <div id="callouts"></div>
+
+      <!-- modals -->
+      <div class="modal" id="modal-end">
+        <div class="modal-box end-box" id="end-body"></div>
+      </div>
+
+      <div class="modal" id="modal-chart">
+        <div class="modal-box wide">
+          <button class="modal-close" data-close>✕</button>
+          <h2>Riichi Mahjong Scoring Chart</h2>
+          <div id="chart-body"></div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-settings">
+        <div class="modal-box">
+          <button class="modal-close" data-close>✕</button>
+          <h2>Settings</h2>
+          <div class="opt"><span class="opt-lbl">Game length</span>
+            <select id="opt-mode"><option value="hanchan">Hanchan (East + South)</option><option value="tonpuu">Tonpuusen (East only)</option></select></div>
+          <div class="opt"><span class="opt-lbl">Opponent speed</span>
+            <select id="opt-speed"><option value="fast">Fast</option><option value="normal">Normal</option><option value="slow">Slow</option></select></div>
+          <label class="opt"><input type="checkbox" id="opt-pause"> Pause after a mistake so I can retry it or keep my play</label>
+          <label class="opt"><input type="checkbox" id="opt-table"> Show akochan's evaluation table after correct plays too</label>
+          <div class="opt"><span class="opt-lbl">Mistake threshold – how many expected placement points a play may lose against akochan's best before it counts as a mistake</span>
+            <select id="opt-threshold"><option value="0.05">0.05 pt (mjai-reviewer default)</option><option value="0.1">0.1 pt</option><option value="0.25">0.25 pt</option><option value="0.5">0.5 pt</option></select></div>
+          <label class="opt"><input type="checkbox" id="opt-reveal"> Show opponents' hands (practice / debugging; the engine still only uses what you can see)</label>
+          <div class="opt-actions">
+            <button class="btn secondary" id="btn-reset-stats">Reset statistics</button>
+            <button class="btn" id="btn-new-game">New game</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="modal-help">
+        <div class="modal-box">
+          <button class="modal-close" data-close>✕</button>
+          <h2>How the Play Trainer grades you</h2>
+          <ol class="help-list">
+            <li>You play a full game against three computer opponents. Tiles, seats and dora are random.</li>
+            <li>Every decision you make (discard, chi / pon / kan, skip, tsumo / ron, kan on your turn) is evaluated by <b>akochan</b>, an open-source mahjong AI running on the server. For each legal option it estimates your <b>expected placement points</b> (EV) for the rest of the game, so it also accounts for the score situation.</li>
+            <li>A play is a <b>mistake</b> when it loses more than the threshold in Settings (default 0.05 pt, the same as mjai-reviewer) against akochan's best option.</li>
+            <li>On top of that: calling to open your hand with <b>no possible yaku</b> is wrong, and <b>riichi</b> is only wrong when none of your winning tiles are left. Choosing dama is never graded; for a discard, the better of riichi / dama is used.</li>
+            <li>"What differs" lists verifiable facts (shanten, tile acceptance, waits, furiten, safety, dora). It does not claim to know akochan's reasoning.</li>
+            <li>If akochan is offline, decisions are <b>not graded</b> rather than guessed.</li>
+          </ol>
+          <p class="help-note">Opponents are played by this site's own simpler heuristic engine. akochan is free for personal research and education; see deploy/DEPLOY.md.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/tiles.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/yaku.js"></script>
+  <script src="js/hand.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/akochan.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/play.js"></script>
+</body>
+</html>

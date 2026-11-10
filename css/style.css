@@ -93,9 +93,9 @@ input { font-family: inherit; }
 
 /* ---------- players ---------- */
 .player { position: absolute; width: 96px; text-align: center; }
-.player[data-seat="bottom"] { left: 178px; top: 505px; }
+.player[data-seat="bottom"] { left: 56px; top: 540px; }
 .player[data-seat="left"] { left: 48px; top: 150px; }
-.player[data-seat="top"] { left: 700px; top: 8px; }
+.player[data-seat="top"] { left: 790px; top: 58px; }
 .player[data-seat="right"] { left: 806px; top: 236px; }
 .avatar { position: relative; width: 70px; height: 70px; margin: 0 auto; border-radius: 10px; border: 2px solid #8a90b0;
   display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 26px; color: #fff;
@@ -128,6 +128,8 @@ input { font-family: inherit; }
 .toolbar { position: absolute; right: 14px; top: 14px; display: flex; gap: 8px; align-items: center; z-index: 30; }
 .tb-btn, .icon-btn { background: rgba(10,12,24,.85); color: var(--ink); border: 2px solid var(--panel-border); border-radius: 8px;
   padding: 7px 12px; font-size: 13px; font-weight: 600; transition: border-color .15s, color .15s; }
+a.tb-btn { display: inline-block; text-decoration: none; }
+.tb-btn.play-link { border-color: var(--gold-dark); color: var(--gold); }
 .icon-btn { width: 38px; height: 38px; padding: 0; font-size: 18px; border-radius: 50%; }
 .tb-btn:hover, .icon-btn:hover, .menu:hover .tb-btn { border-color: var(--gold); color: var(--gold); }
 .menu { position: relative; }

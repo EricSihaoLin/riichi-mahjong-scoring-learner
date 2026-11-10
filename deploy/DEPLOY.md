@@ -89,3 +89,38 @@ No restart needed – nginx serves the new files immediately (browsers may cache
 
 - **Restrict access**: Zero Trust → **Access** → **Applications** → add `riichi.example.com` with a policy (e.g. emails you allow, or a one-time PIN). The tunnel already blocks everything except Cloudflare, so this is the only gate you need.
 - **Docker instead of nginx + systemd**: see `docker-compose.yml` in this folder (point the Public Hostname at `http://web:80`).
+
+## Play Trainer grading engine (akochan)
+
+The Play Trainer grades your decisions with [akochan](https://github.com/critter-mj/akochan), a C++ mahjong AI. It runs on the server next to nginx; the page talks to it through `/api/` on the same hostname.
+
+**License:** akochan is free for personal research and education only, and the author may change the terms. The install script downloads it from the author's repository; it is never copied into this project. Keep the site private (below).
+
+### Install
+
+From the cloned repo on the server:
+
+```bash
+cd ~/riichi && git pull && sudo bash deploy/install-akochan.sh
+```
+
+The script installs the build tools (g++, Boost), clones and builds akochan into `/opt/akochan`, installs the bridge service `akochan-bridge` (Python, listens on 127.0.0.1:8091, starts on boot), adds the `/api/` route to nginx, and runs a smoke test that prints akochan's first answers and how long they took.
+
+If the build fails (akochan has not been updated in years, so a newer compiler may complain), copy the error messages so the build can be fixed.
+
+Useful commands:
+
+```bash
+systemctl status akochan-bridge
+journalctl -u akochan-bridge -n 50
+python3 /opt/riichi-api/smoke_test.py --raw
+```
+
+`deploy/update.sh` also updates and restarts the bridge once it is installed. The service settings (threads, max concurrent games) are in `/etc/systemd/system/akochan-bridge.service`.
+
+### Make the site private (Cloudflare Access)
+
+1. Cloudflare dashboard → **Zero Trust** → **Access** → **Applications** → **Add an application** → **Self-hosted**.
+2. Application name `Riichi`, domain = your site's hostname (e.g. `riichi.example.com`), leave the path empty so the whole site and `/api/` are covered.
+3. Add a policy: Action **Allow**, Include **Emails** → your email address (add anyone else you want to let in).
+4. Save. Visitors now get a login page that emails them a one-time code.

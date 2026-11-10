@@ -1,0 +1,18 @@
+[Unit]
+Description=akochan bridge for the Riichi Play Trainer
+After=network.target
+
+[Service]
+User=akochan
+Group=akochan
+Environment=AKOCHAN_DIR=/opt/akochan
+Environment=AKOCHAN_TACTICS=/opt/akochan/tactics.json
+Environment=API_PORT=8091
+Environment=MAX_SESSIONS=3
+ExecStart=/usr/bin/python3 /opt/riichi-api/akochan_server.py
+Restart=on-failure
+RestartSec=3
+Nice=5
+
+[Install]
+WantedBy=multi-user.target
