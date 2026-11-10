@@ -13,7 +13,7 @@ import urllib.request
 BASE = os.environ.get('BRIDGE', 'http://127.0.0.1:8091') + '/api/akochan/'
 HIDDEN = ['?'] * 13
 EVENTS = [
-    {'type': 'start_game', 'names': ['You', 'Shimocha', 'Toimen', 'Kamicha']},
+    {'type': 'start_game', 'names': ['You', 'Shimocha', 'Toimen', 'Kamicha'], 'kyoku_first': 4, 'aka_flag': True},
     {'type': 'start_kyoku', 'bakaze': 'E', 'kyoku': 1, 'honba': 0, 'kyotaku': 0, 'oya': 0, 'dora_marker': '3s',
      'scores': [25000, 25000, 25000, 25000],
      'tehais': [['1m', '2m', '3m', '5mr', '6m', '4p', '4p', '6p', '7s', '8s', 'E', 'P', 'C'], HIDDEN, HIDDEN, HIDDEN]},

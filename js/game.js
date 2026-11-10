@@ -34,7 +34,8 @@
 
   function newGame(mode = 'hanchan') {
     const st = { mode, startDealer: rand(4), roundIndex: 0, honba: 0, sticks: 0, scores: [25000, 25000, 25000, 25000], handNo: 0 };
-    st.mjai = [{ type: 'start_game', names: NAMES.slice() }];
+    // akochan also needs the game length (kyoku_first: 4 = hanchan, 0 = East only) and whether red fives are used
+    st.mjai = [{ type: 'start_game', names: NAMES.slice(), kyoku_first: mode === 'tonpuu' ? 0 : 4, aka_flag: true }];
     startHand(st);
     return st;
   }
