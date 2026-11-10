@@ -30,7 +30,7 @@ A full 4-player game (hanchan or East-only) with random walls, dora, red fives, 
 
 Every decision you make – discard, chi / pon / kan / skip, tsumo / ron, kan on your own turn – is graded by **[akochan](https://github.com/critter-mj/akochan)**, an open-source mahjong AI that runs on the server (`deploy/install-akochan.sh`):
 
-- akochan estimates the **expected placement points** of every legal option. A play is a mistake when it loses more than a threshold (default 0.25 pt, adjustable from 0.05 to 1 pt) against akochan's best.
+- akochan estimates the **expected placement points** of every legal option. A play is a mistake when it loses more than a threshold (default 0.5 pt, adjustable from 0.05 to 1 pt) against akochan's best.
 - Opening your hand with **no possible yaku** is always wrong. **Riichi** is only wrong on a dead wait (no winning tiles left); dama is never graded and discards use the better of riichi / dama.
 - Mistakes list verifiable differences (shanten, tile acceptance, waits, furiten, safety, dora) and akochan's evaluation table. You can retry the decision or keep your play.
 - If akochan is unreachable, decisions are not graded rather than guessed.

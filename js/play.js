@@ -10,9 +10,9 @@
 
   const load = (k, d) => { try { return Object.assign({}, d, JSON.parse(localStorage.getItem(k) || '{}')); } catch (e) { return Object.assign({}, d); } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } };
-  let settings = load('rmsl-play-settings', { mode: 'hanchan', speed: 'normal', pauseOnMistake: true, showTableOnCorrect: true, revealHands: false, threshold: 0.25, helpers: true });
-  // 0.05 pt (mjai-reviewer's flagging threshold) was the first default but marked near-ties as mistakes
-  if (!settings.thresholdV2) { if (settings.threshold === 0.05) settings.threshold = 0.25; settings.thresholdV2 = true; save('rmsl-play-settings', settings); }
+  let settings = load('rmsl-play-settings', { mode: 'hanchan', speed: 'normal', pauseOnMistake: true, showTableOnCorrect: true, revealHands: false, threshold: 0.5, helpers: true });
+  // Earlier defaults (0.05, then 0.25 pt) marked near-ties as mistakes; move anyone still on them to 0.5
+  if (!settings.thresholdV3) { if (settings.threshold === 0.05 || settings.threshold === 0.25) settings.threshold = 0.5; settings.thresholdV3 = true; save('rmsl-play-settings', settings); }
   let stats = load('rmsl-play-stats', { decisions: 0, good: 0 });
   const session = { decisions: 0, good: 0, streak: 0, handDecisions: 0, handMistakes: 0 };
 
