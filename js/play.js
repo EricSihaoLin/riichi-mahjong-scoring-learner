@@ -10,7 +10,7 @@
 
   const load = (k, d) => { try { return Object.assign({}, d, JSON.parse(localStorage.getItem(k) || '{}')); } catch (e) { return Object.assign({}, d); } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } };
-  let settings = load('rmsl-play-settings', { mode: 'hanchan', speed: 'normal', pauseOnMistake: true, showTableOnCorrect: true, revealHands: false, threshold: 0.05 });
+  let settings = load('rmsl-play-settings', { mode: 'hanchan', speed: 'normal', pauseOnMistake: true, showTableOnCorrect: true, revealHands: false, threshold: 0.05, helpers: true });
   let stats = load('rmsl-play-stats', { decisions: 0, good: 0 });
   const session = { decisions: 0, good: 0, streak: 0, handDecisions: 0, handMistakes: 0 };
 
@@ -215,9 +215,34 @@
     render();
   }
 
+  /* ---------- tile helpers: dora marks + every visible copy of the tile you hover ---------- */
+  let doraSet = new Set();
+  let hoverId = null;
+  const doraCls = x => (settings.helpers && (x.aka || doraSet.has(x.t)) ? 'dora' : '');
+  function applySeen() {
+    document.querySelectorAll('.tile.seen-hl').forEach(t => t.classList.remove('seen-hl'));
+    document.querySelectorAll('.seen-count').forEach(b => b.remove());
+    if (!settings.helpers || hoverId === null || !st) return;
+    const el = document.querySelector(`#my-hand .concealed .tile[data-id="${hoverId}"]`);
+    if (!el) return;
+    const kind = el.dataset.tile;
+    const seen = [...document.querySelectorAll('.discards .tile, .opp-melds .tile, #my-hand .melds .tile, #round-box .dora-slots .tile')]
+      .filter(t => t.dataset.tile === kind && !(t.classList.contains('back') && t.closest('.dora-slots')));
+    seen.forEach(t => t.classList.add('seen-hl'));
+    const mine = st.players[0].hand.filter(x => x.t === kind).length;
+    const left = Math.max(0, 4 - seen.length - mine);
+    el.insertAdjacentHTML('beforeend', `<span class="seen-count">${seen.length} seen · ${left} left</span>`);
+  }
+  $('#my-hand').addEventListener('mouseover', e => {
+    const t = e.target.closest('.concealed .tile');
+    const id = t ? +t.dataset.id : null;
+    if (id !== hoverId) { hoverId = id; applySeen(); }
+  });
+  $('#my-hand').addEventListener('mouseleave', () => { hoverId = null; applySeen(); });
+
   /* ---------- rendering ---------- */
   const posOf = p => POS[p];
-  function render() { if (st && st.mjai) Ako.sync(); renderPlayers(); renderCompass(); renderRoundBox(); renderDiscards(); renderOpponents(); renderMyHand(); renderActions(); renderReview(); }
+  function render() { if (st && st.mjai) Ako.sync(); doraSet = new Set(G.indicators(st).map(x => T.nextTile(x.t))); renderPlayers(); renderCompass(); renderRoundBox(); renderDiscards(); renderOpponents(); renderMyHand(); renderActions(); renderReview(); applySeen(); }
 
   function renderPlayers() {
     const d = G.dealerOf(st);
@@ -248,12 +273,12 @@
     for (let p = 0; p < 4; p++) {
       $(`.discards[data-seat="${posOf(p)}"]`).innerHTML = st.players[p].discards.map(d => {
         const cls = [d.riichi ? 'riichi-tile' : '', d.called ? 'called' : '', d.tsumogiri ? 'tsumogiri' : '', ld && ld.rec === d && st.phase === 'react' ? 'last' : ''].filter(Boolean).join(' ');
-        return T.tileHTML(d.tile.t, { size: 'mini', aka: d.tile.aka, extraClass: cls });
+        return T.tileHTML(d.tile.t, { size: 'mini', aka: d.tile.aka, extraClass: (cls + ' ' + doraCls(d.tile)).trim() });
       }).join('');
     }
   }
   function meldHTML(m, size) {
-    const tile = (o, opts = {}) => T.tileHTML(o.t, Object.assign({ size, aka: o.aka }, opts));
+    const tile = (o, opts = {}) => T.tileHTML(o.t, Object.assign({ size, aka: o.aka, extraClass: opts.back ? '' : doraCls(o) }, opts));
     if (m.type === 'kan' && m.kanType === 'ankan') return `<div class="meld">${m.tiles.map((o, i) => tile(o, { back: i === 0 || i === 3 })).join('')}</div>`;
     const rest = m.tiles.filter(o => o !== m.called);
     const rotIdx = m.rel === 3 ? 0 : m.rel === 2 ? 1 : rest.length;
@@ -265,7 +290,7 @@
     const reveal = settings.revealHands || st.phase === 'end' || st.phase === 'gameover';
     for (let p = 1; p < 4; p++) {
       const pl = st.players[p];
-      const hand = reveal ? pl.hand.map(x => T.tileHTML(x.t, { size: 'small', aka: x.aka })).join('') : T.tileHTML('E', { back: true, size: 'small' }).repeat(pl.hand.length);
+      const hand = reveal ? pl.hand.map(x => T.tileHTML(x.t, { size: 'small', aka: x.aka, extraClass: doraCls(x) })).join('') : T.tileHTML('E', { back: true, size: 'small' }).repeat(pl.hand.length);
       const melds = pl.melds.map(m => meldHTML(m, 'small')).join('');
       $(`.opp-hand[data-seat="${posOf(p)}"]`).innerHTML = `<div class="opp-tiles">${hand}</div>${melds ? `<div class="opp-melds">${melds}</div>` : ''}`;
     }
@@ -283,6 +308,7 @@
       }
       if (hintTile && hintTile === x.t + (x.aka ? '*' : '')) cls.push('hint');
       if (x === me.drawn) cls.push('drawn');
+      if (doraCls(x)) cls.push('dora');
       return T.tileHTML(x.t, { size: 'hand', aka: x.aka, extraClass: cls.join(' ') }).replace('class="tile', `data-id="${x.id}" class="tile`);
     };
     const conc = me.hand.filter(x => x !== me.drawn).map(one).join('') + (me.drawn && me.hand.includes(me.drawn) ? one(me.drawn) : '');
@@ -541,7 +567,7 @@
   $('#opt-speed').value = settings.speed;
   $('#opt-threshold').value = String(settings.threshold);
   $('#opt-threshold').addEventListener('change', e => { settings.threshold = +e.target.value; saveSettings(); });
-  const checks = { 'opt-pause': 'pauseOnMistake', 'opt-table': 'showTableOnCorrect', 'opt-reveal': 'revealHands' };
+  const checks = { 'opt-pause': 'pauseOnMistake', 'opt-table': 'showTableOnCorrect', 'opt-reveal': 'revealHands', 'opt-helpers': 'helpers' };
   for (const [id, key] of Object.entries(checks)) {
     const el = document.getElementById(id);
     el.checked = settings[key];

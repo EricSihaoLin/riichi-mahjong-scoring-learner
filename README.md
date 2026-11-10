@@ -34,6 +34,7 @@ Every decision you make – discard, chi / pon / kan / skip, tsumo / ron, kan on
 - Opening your hand with **no possible yaku** is always wrong. **Riichi** is only wrong on a dead wait (no winning tiles left); dama is never graded and discards use the better of riichi / dama.
 - Mistakes list verifiable differences (shanten, tile acceptance, waits, furiten, safety, dora) and akochan's evaluation table. You can retry the decision or keep your play.
 - If akochan is unreachable, decisions are not graded rather than guessed.
+- Tile helpers (Settings, on by default): dora and red fives get a gold frame, and hovering a tile in your hand highlights every visible copy (rivers, melds, dora indicators) with a "seen · left" count.
 
 The opponents are played by this project's own heuristic engine (`js/engine.js`), which is also used for the factual comparisons. akochan is free for personal research and education only – keep the site private (see `deploy/DEPLOY.md`).
 
