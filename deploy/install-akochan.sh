@@ -30,6 +30,11 @@ build() { make -f Makefile_Linux -j"$(nproc)" "COMPILER=$COMPILER" || make -f Ma
 cd "$AKO/ai_src"
 build
 cd "$AKO"
+# Its mjai TCP client (unused here, but linked into system.exe) uses Boost.Asio calls removed in Boost 1.87.
+# Switch to the replacements that exist since Boost 1.66 (local build copy only).
+sed -i 's/boost::asio::io_service /boost::asio::io_context /' mjai_client.hpp
+sed -i -e 's/boost::asio::ip::address::from_string(/boost::asio::ip::make_address(/' \
+       -e 's/boost::asio::buffer_cast<const char \*>(buffer\.data())/static_cast<const char *>(buffer.data().data())/' mjai_client.cpp
 build
 if [[ ! -f $AKO/libai.so || ! -x $AKO/system.exe ]]; then
   echo "!! The build did not produce libai.so and system.exe. Send the error messages above to get it fixed."
