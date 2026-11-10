@@ -20,10 +20,13 @@ if [[ -d $AKO/.git ]]; then git -C "$AKO" pull --ff-only || true
 else git clone --depth 1 https://github.com/critter-mj/akochan.git "$AKO"; fi
 
 echo "==> Building akochan (this can take 10+ minutes)"
+# akochan predates GCC 13, which no longer pulls in these headers implicitly (e.g. uint8_t in json11.cpp).
+COMPILER="g++ -include cstdint -include cstddef -include limits -include algorithm -include stdexcept"
+build() { make -f Makefile_Linux -j"$(nproc)" "COMPILER=$COMPILER" || make -f Makefile_Linux "COMPILER=$COMPILER"; }
 cd "$AKO/ai_src"
-make -f Makefile_Linux -j"$(nproc)" || make -f Makefile_Linux
+build
 cd "$AKO"
-make -f Makefile_Linux -j"$(nproc)" || make -f Makefile_Linux
+build
 if [[ ! -f $AKO/libai.so || ! -x $AKO/system.exe ]]; then
   echo "!! The build did not produce libai.so and system.exe. Send the error messages above to get it fixed."
   exit 1
