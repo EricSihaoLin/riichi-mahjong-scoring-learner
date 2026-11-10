@@ -142,12 +142,15 @@
     if (m.type === 'chi') return 'chi:' + m.consumed.map(p => fromMj(p).t).sort((a, b) => T.tileIndex(a) - T.tileIndex(b)).join(',');
     return null;
   };
-  /* kind: 'self' | 'react' | 'afterCall' (then `made` = the call key you made). Returns candidates best-first. */
+  /* kind: 'self' | 'react' | 'afterCall' (then `made` = the call key you made). Returns candidates best-first.
+     When your hand is 4+ shanten and nobody threatens, akochan skips its evaluation and returns a single move without
+     values (its "rule base" mode); that move is reported as `.quick` on the returned array. */
   function candidates(actions, kind, made) {
     const byKey = new Map();
+    let quick = null;
     const add = (key, a, extra) => {
       const ev = a.review && typeof a.review.pt_exp_total === 'number' ? a.review.pt_exp_total : null;
-      if (ev === null) return;
+      if (ev === null) { if (quick === null) quick = key; return; }
       const c = byKey.get(key);
       if (!c) byKey.set(key, Object.assign({ key, ev, review: a.review, moves: a.moves, variants: [{ ev, riichi: !!(extra && extra.riichi) }] }, extra));
       else {
@@ -172,13 +175,16 @@
         if (callKey(m0) === made && m[1] && m[1].type === 'dahai') add(dKey(m[1].pai), a);
       }
     }
-    return [...byKey.values()].sort((x, y) => y.ev - x.ev);
+    const out = [...byKey.values()].sort((x, y) => y.ev - x.ev);
+    out.quick = out.length ? null : quick;
+    return out;
   }
 
   /* Grade `key` among the options the trainer offered. threshold is in expected placement points. */
   function grade(cands, key, offered, threshold) {
     const pool = cands.filter(c => offered.has(c.key));
     const chosen = pool.find(c => c.key === key);
+    if (!pool.length && cands.quick) return { graded: false, quickKey: cands.quick, reason: 'quick mode', pool, chosen };
     if (!pool.length || !chosen) return { graded: false, reason: pool.length ? `akochan rated ${pool.length} other option${pool.length > 1 ? 's' : ''} but not this one` : `akochan's answer had no options for this decision (${cands.length} other)`, pool, chosen };
     const best = pool[0];
     const loss = Math.max(0, best.ev - chosen.ev);

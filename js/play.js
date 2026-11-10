@@ -152,6 +152,10 @@
     const key = keyOf(choice), offered = offeredKeys(a), facts = getEval();
     const g = a.ako ? Ako.grade(akoCands(a), key, offered, settings.threshold) : { graded: false, reason: a.akoError || 'akochan is offline' };
     g.reasons = []; g.notes = [];
+    if (g.quickKey) {
+      const what = a.kind === 'react' ? 'always passes on calls' : 'just discards its most isolated tile';
+      g.reason = `your hand is 4+ shanten, so akochan doesn't evaluate it – it ${what} (${keyLabel(g.quickKey)})${g.quickKey === key ? ', same as you' : ''}`;
+    }
     const mine = facts.cands.find(c => c.key === key);
     const isCall = a.kind === 'react' && ['pon', 'chi', 'kan'].includes(choice.type);
     if (g.graded) {
@@ -212,8 +216,8 @@
     a.hinted = true; render();
     if (a.akoPromise) await a.akoPromise;
     if (awaiting !== a || !a.ako) { render(); return; }
-    const pool = akoCands(a).filter(c => offeredKeys(a).has(c.key));
-    a.hintKey = pool.length ? pool[0].key : null;
+    const cands = akoCands(a), pool = cands.filter(c => offeredKeys(a).has(c.key));
+    a.hintKey = pool.length ? pool[0].key : cands.quick && offeredKeys(a).has(cands.quick) ? cands.quick : null;
     render();
   }
 
