@@ -5,6 +5,8 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 git -C "$REPO_DIR" pull --ff-only
 rsync -a --delete --exclude .git --exclude deploy --exclude server --exclude README.md --exclude .gitattributes "$REPO_DIR/" /var/www/riichi/
 chown -R www-data:www-data /var/www/riichi
+# Version the script/style URLs so browsers and Cloudflare fetch the new files after every deploy
+sed -i "s/?v=dev/?v=$(git -C "$REPO_DIR" rev-parse --short HEAD)/g" /var/www/riichi/*.html
 if [[ -d /opt/riichi-api ]]; then
   cp "$REPO_DIR/server/akochan_server.py" "$REPO_DIR/server/smoke_test.py" /opt/riichi-api/
   cp "$REPO_DIR/deploy/akochan-bridge.service" /etc/systemd/system/

@@ -179,7 +179,7 @@
   function grade(cands, key, offered, threshold) {
     const pool = cands.filter(c => offered.has(c.key));
     const chosen = pool.find(c => c.key === key);
-    if (!pool.length || !chosen) return { graded: false, reason: chosen ? 'akochan returned no options' : 'akochan did not evaluate this option', pool, chosen };
+    if (!pool.length || !chosen) return { graded: false, reason: pool.length ? `akochan rated ${pool.length} other option${pool.length > 1 ? 's' : ''} but not this one` : `akochan's answer had no options for this decision (${cands.length} other)`, pool, chosen };
     const best = pool[0];
     const loss = Math.max(0, best.ev - chosen.ev);
     return { graded: true, correct: loss <= threshold + 1e-9, loss, best, chosen, pool, overallBest: cands[0], threshold };

@@ -16,6 +16,8 @@ echo "==> Copying site to $SITE_DIR"
 mkdir -p "$SITE_DIR"
 rsync -a --delete --exclude .git --exclude deploy --exclude server --exclude README.md --exclude .gitattributes "$REPO_DIR/" "$SITE_DIR/"
 chown -R www-data:www-data "$SITE_DIR"
+# Version the script/style URLs so browsers and Cloudflare fetch the new files after every deploy
+sed -i "s/?v=dev/?v=$(git -C "$REPO_DIR" rev-parse --short HEAD)/g" "$SITE_DIR"/*.html
 
 echo "==> Configuring nginx site (listens on 127.0.0.1:8080 only)"
 cp "$REPO_DIR/deploy/riichi.nginx.conf" /etc/nginx/sites-available/riichi
